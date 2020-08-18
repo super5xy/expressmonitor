@@ -35,6 +35,7 @@ public class Result extends HashMap<String, Object> {
 	}
 	public static Result ok(Object msg) {
 		Result r = new Result();
+		r.put("code", 200);
 		r.put("msg", msg);
 		return r;
 	}
@@ -47,7 +48,10 @@ public class Result extends HashMap<String, Object> {
 	}
 
 	public static Result ok() {
-		return new Result();
+		Result r = new Result();
+		r.put("code", 200);
+		r.put("msg", "操作成功");
+		return r;
 	}
 
 	@Override
