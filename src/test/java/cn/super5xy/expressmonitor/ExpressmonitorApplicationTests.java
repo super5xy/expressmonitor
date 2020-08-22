@@ -15,7 +15,7 @@ class ExpressmonitorApplicationTests {
     @Test
     void contextLoads() {
         Express express = new Express();
-        express.setState(32);
+        express.setState(0);
         List<Express> expresses = expressService.queryAll(express);
         System.out.println(expresses);
         System.out.println(expresses.size());

@@ -46,42 +46,42 @@ public class ExpressController {
         if (StringUtils.isEmpty(scKey) && StringUtils.isEmpty(sKey)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(403, "请填写信息"));
         }
-        if (KuaiDi.check(expressNumber)) {
+        if (!KuaiDi.check(expressNumber)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(403, "快递单不存在"));
         }
-
-        if (StringUtils.isEmpty(scKey) ^ StringUtils.isEmpty(sKey)) {
-            Express express = new Express();
-            if (StringUtils.isEmpty(scKey)) {
-                String body = HttpRequest.post("https://push.xuthus.cc/send/" + sKey).form("c", "收到这条消息代表绑定成功 单号" + expressNumber)
-                        .execute().body();
-                if ("400".equals(JSONUtil.parseObj(body).getStr("code"))) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(403, "请检查skey"));
-                }
-                express.setType(1);
-
-            } else {
-                Map<String, Object> map = new HashMap<>();
-                map.put("text", "绑定成功通知");
-                map.put("desp", "收到这条消息代表绑定成功 单号" + expressNumber);
-                String body = HttpRequest.post("https://sc.ftqq.com/" + scKey + ".send")
-                        .form(map)
-                        .execute().body();
-                if (body.contains("bad pushtoken")) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(403, "请检查sckey"));
-                }
-                express.setType(0);
-            }
-            express.setExpressNumber(expressNumber);
-            express.setExpressName(KuaiDi.autoComNum(expressNumber));
-            express.setSckey(scKey);
-            express.setSkey(sKey);
-            express.setSize(0);
-            express.setState(0);
-            express.setDate(new Date());
-            this.expressService.insert(express);
-            return ResponseEntity.ok(Result.ok("添加成功"));
+        if (!StringUtils.isEmpty(scKey) ^ StringUtils.isEmpty(sKey)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(403,"不可同时填写sckey和skey"));
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(403,"不可同时填写sckey和skey"));
+
+        Express express = new Express();
+        if (StringUtils.isEmpty(scKey)) {
+            String body = HttpRequest.post("https://push.xuthus.cc/send/" + sKey).form("c", "收到这条消息代表绑定成功 单号" + expressNumber)
+                    .execute().body();
+            if ("400".equals(JSONUtil.parseObj(body).getStr("code"))) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(403, "请检查skey"));
+            }
+            express.setType(1);
+
+        } else {
+            Map<String, Object> map = new HashMap<>();
+            map.put("text", "绑定成功通知");
+            map.put("desp", "收到这条消息代表绑定成功 单号" + expressNumber);
+            String body = HttpRequest.post("https://sc.ftqq.com/" + scKey + ".send")
+                    .form(map)
+                    .execute().body();
+            if (body.contains("bad pushtoken")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Result.error(403, "请检查sckey"));
+            }
+            express.setType(0);
+        }
+        express.setExpressNumber(expressNumber);
+        express.setExpressName(KuaiDi.autoComNum(expressNumber));
+        express.setSckey(scKey);
+        express.setSkey(sKey);
+        express.setSize(0);
+        express.setState(0);
+        express.setDate(new Date());
+        this.expressService.insert(express);
+        return ResponseEntity.ok(Result.ok("添加成功"));
     }
 }
